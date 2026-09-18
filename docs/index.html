@@ -316,7 +316,7 @@ async function refresh() {
         <div class="row"><span>Offline after</span><span>${c.offline_after_s / 60} min silent</span></div>
         <div class="row"><span>Baby in/out notices</span><span>${c.notify_baby_changes ? "on" : "off"}</span></div>
         ${(c.scheduled_checks || []).map(x => `<div class="row"><span>${x.name}</span><span>${String(x.cron.hour).padStart(2,"0")}:${String(x.cron.minute).padStart(2,"0")} ${x.cron.day_of_week}</span></div>`).join("")}
-        <div class="row"><span>ntfy topic</span><span>${c.ntfy_topic}</span></div>`;
+        ${c.ntfy_topic ? `<div class="row"><span>ntfy topic</span><span>${c.ntfy_topic}</span></div>` : ""}`;
     }
 
     // footer
