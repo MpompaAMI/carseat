@@ -113,6 +113,7 @@
       <div class="row"><span>Pressure</span><span id="press"></span></div>
       <div class="row"><span>Last change</span><span id="last_change"></span></div>
       <div class="row"><span>Seat unit uptime</span><span id="uptime"></span></div>
+      <div class="row"><span>Reported via</span><span id="via"></span></div>
     </div>
   </section>
 
@@ -282,6 +283,7 @@ async function refresh() {
     $("press").textContent = s.pressure_hpa == null ? "--" : Math.round(s.pressure_hpa) + " hPa";
     $("last_change").textContent = s.last_change || "none yet";
     $("uptime").textContent = dur(s.uptime_s);
+    $("via").textContent = !s.via ? "--" : s.via === "wifi" ? "home Wi-Fi" : s.via.replace(/^phone:/, "") + " (phone)";
 
     // alarm banner
     const bn = $("banner");
