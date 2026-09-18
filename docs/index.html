@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Car Seat</title>
+<!-- Lets iPhone install this as a full-screen app: Safari > Share > Add to Home Screen -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Car Seat">
+<meta name="theme-color" content="#2563eb">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="manifest" href="manifest.json">
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #fff; --text: #1a1d21; --muted: #6b7280; --line: rgba(128,128,128,.15);
+    --michael: #2563eb; --wife: #db2777; --none: #9ca3af; --bad: #dc2626; --ok: #16a34a; --warn: #d97706;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #111318; --card: #1b1e25; --text: #e6e8eb; --muted: #9aa3ad; }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.4 -apple-system, Segoe UI, Roboto, sans-serif;
+         padding-top: env(safe-area-inset-top); }
+  .wrap { max-width: 520px; margin: 0 auto; padding: 12px 16px 96px; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 6px 0 12px; }
+  header h1 { font-size: 20px; margin: 0; font-weight: 700; }
+  .pill { display: inline-block; padding: 4px 11px; border-radius: 999px; font-size: 13px;
+          font-weight: 600; color: #fff; background: var(--ok); }
+  .pill.off { background: var(--bad); }
+  .card { background: var(--card); border-radius: 16px; padding: 18px; margin-bottom: 12px;
+          box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .banner { background: var(--bad); color: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 12px;
+            font-weight: 600; display: none; }
+  .banner small { display: block; font-weight: 400; opacity: .9; margin-top: 4px; }
+  .banner.show { display: block; animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .78 } }
+  .base { font-size: 34px; font-weight: 800; margin: 2px 0 4px; letter-spacing: -.01em; }
+  .base.michael { color: var(--michael); } .base.wife { color: var(--wife); }
+  .base.none, .base.unknown { color: var(--none); }
+  .sub { color: var(--muted); font-size: 14px; }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+  .tile { background: var(--card); border-radius: 14px; padding: 14px 12px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .tile .k { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .tile .v { font-size: 22px; font-weight: 700; margin-top: 4px; }
+  .tile .v.yes { color: var(--ok); } .tile .v.no { color: var(--muted); }
+  .tile .v.hot { color: var(--bad); } .tile .v.cold { color: var(--michael); }
+  .tile .s { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .row { display: flex; justify-content: space-between; padding: 9px 0; border-top: 1px solid var(--line); font-size: 15px; }
+  .row:first-child { border-top: 0; }
+  .row span:last-child { color: var(--muted); text-align: right; }
+  h2 { font-size: 13px; color: var(--muted); margin: 0 0 8px; text-transform: uppercase; letter-spacing: .05em; }
+  ul { list-style: none; padding: 0; margin: 0; }
+  li { display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; font-size: 15px;
+       border-top: 1px solid var(--line); align-items: baseline; }
+  li:first-child { border-top: 0; }
+  li .m { color: var(--michael); font-weight: 600; } li .w { color: var(--wife); font-weight: 600; }
+  li .n { color: var(--none); font-weight: 600; } li .b { color: var(--ok); font-weight: 600; }
+  li .bo { color: var(--muted); font-weight: 600; } li .al { color: var(--bad); font-weight: 600; }
+  li time { color: var(--muted); font-size: 13px; white-space: nowrap; }
+  button { width: 100%; padding: 13px; border: 0; border-radius: 12px; background: var(--card);
+           color: var(--text); font-size: 15px; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.08);
+           cursor: pointer; margin-bottom: 10px; }
+  button.danger { color: var(--bad); }
+  .err { color: var(--bad); font-size: 14px; }
+  .hint { background: var(--card); border-radius: 12px; padding: 12px 14px; font-size: 14px; color: var(--muted);
+          margin-bottom: 12px; display: none; }
+  .hint b { color: var(--text); }
+  /* tabs */
+  nav { position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+        display: flex; justify-content: space-around;
+        padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); }
+  nav button { width: auto; flex: 1; margin: 0; background: none; box-shadow: none; color: var(--muted);
+               font-size: 12px; font-weight: 600; padding: 6px 0; border-radius: 0; }
+  nav button .ic { display: block; font-size: 20px; margin-bottom: 2px; }
+  nav button.on { color: var(--michael); }
+  section { display: none; } section.on { display: block; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Car Seat</h1>
+    <span id="online" class="pill">checking</span>
+  </header>
+
+  <div id="banner" class="banner"></div>
+
+  <div id="installHint" class="hint">
+    <b>Put this on your home screen:</b> tap Share in Safari, then <b>Add to Home Screen</b>. It opens full screen like an app.
+  </div>
+
+  <!-- ---------------- SEAT TAB ---------------- -->
+  <section id="tab-seat" class="on">
+    <div class="card">
+      <div class="sub">Seat is on</div>
+      <div id="base" class="base unknown">Loading</div>
+      <div id="age" class="sub"></div>
+    </div>
+
+    <div class="tiles">
+      <div class="tile"><div class="k">Baby</div><div id="baby" class="v no">--</div><div id="babySub" class="s"></div></div>
+      <div class="tile"><div class="k">Cabin</div><div id="temp" class="v">--</div><div id="tempSub" class="s"></div></div>
+      <div class="tile"><div class="k">Humidity</div><div id="hum" class="v">--</div><div id="humSub" class="s"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="row"><span>Michael's base signal</span><span id="rssi_a"></span></div>
+      <div class="row"><span>Wife's base signal</span><span id="rssi_b"></span></div>
+      <div class="row"><span>Seat pad</span><span id="fsr"></span></div>
+      <div class="row"><span>Pressure</span><span id="press"></span></div>
+      <div class="row"><span>Last change</span><span id="last_change"></span></div>
+      <div class="row"><span>Seat unit uptime</span><span id="uptime"></span></div>
+    </div>
+  </section>
+
+  <!-- ---------------- HISTORY TAB ---------------- -->
+  <section id="tab-history">
+    <div class="card">
+      <h2>Events</h2>
+      <ul id="history"><li>Loading</li></ul>
+    </div>
+  </section>
+
+  <!-- ---------------- ALERTS TAB ---------------- -->
+  <section id="tab-alerts">
+    <div class="card">
+      <h2>Active alarms</h2>
+      <ul id="alarms"><li>None</li></ul>
+    </div>
+    <div class="card">
+      <h2>Rules</h2>
+      <div id="rules"></div>
+    </div>
+    <div class="card">
+      <h2>Recent notifications</h2>
+      <ul id="notes"><li>Loading</li></ul>
+    </div>
+    <button id="testBtn">Send test notification</button>
+    <button id="alarmBtn" class="danger">Sound a test alarm</button>
+  </section>
+
+  <p id="err" class="err"></p>
+  <p id="source" class="sub" style="text-align:center"></p>
+</div>
+
+<nav>
+  <button data-tab="seat" class="on"><span class="ic">&#128663;</span>Seat</button>
+  <button data-tab="history"><span class="ic">&#128337;</span>History</button>
+  <button data-tab="alerts"><span class="ic">&#128276;</span>Alerts</button>
+</nav>
+
+<script>
+const $ = id => document.getElementById(id);
+let cfg = null;
+
+// ---- where does the data come from? ------------------------------------
+// On the home PC the page is served by server.py and reads /status directly.
+// On GitHub Pages there is no server, so the page reads state.json that
+// server.py pushes to the "data" branch of this repo.
+const REMOTE = location.hostname.endsWith("github.io") || location.search.includes("repo=");
+function ghRepo() {
+  const q = new URLSearchParams(location.search).get("repo");
+  if (q && q.includes("/")) { try { localStorage.setItem("gh_repo", q); } catch {} return q.split("/"); }
+  try { const s = localStorage.getItem("gh_repo"); if (s && !location.hostname.endsWith("github.io")) return s.split("/"); } catch {}
+  const user = location.hostname.split(".")[0];
+  const repo = location.pathname.split("/").filter(Boolean)[0] || "carseat";
+  return [user, repo];
+}
+const POLL_MS = REMOTE ? 60000 : 10000;
+
+// ---- helpers ----
+function ago(s) {
+  if (s == null) return "never";
+  if (s < 60) return s + "s ago";
+  if (s < 3600) return Math.floor(s / 60) + " min ago";
+  if (s < 86400) return Math.floor(s / 3600) + " hr ago";
+  return Math.floor(s / 86400) + " days ago";
+}
+function dur(s) {
+  if (s == null) return "";
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+  return h ? `${h}h ${m}m` : `${m}m`;
+}
+function rssi(v, seen) { return (!seen || v == null || v <= -127) ? "not seen" : v + " dBm"; }
+function cls(kind, r) {
+  if (kind === "baby") return r.baby ? "b" : "bo";
+  return r.base === "michael" ? "m" : r.base === "wife" ? "w" : "n";
+}
+function shortTime(t) { return t ? t.slice(5, 16).replace("-", "/") : ""; }
+
+// ---- tabs ----
+document.querySelectorAll("nav button").forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll("nav button").forEach(x => x.classList.remove("on"));
+    document.querySelectorAll("section").forEach(x => x.classList.remove("on"));
+    b.classList.add("on");
+    $("tab-" + b.dataset.tab).classList.add("on");
+    try { localStorage.setItem("tab", b.dataset.tab); } catch {}
+    refresh();
+  };
+});
+try { const t = localStorage.getItem("tab"); if (t) document.querySelector(`nav button[data-tab="${t}"]`).click(); } catch {}
+
+// Show the install hint on iPhone Safari when not already installed
+const isIOS = /iphone|ipad/i.test(navigator.userAgent);
+if (isIOS && navigator.standalone === false) $("installHint").style.display = "block";
+
+// The test buttons talk to server.py directly, which GitHub Pages cannot do
+if (REMOTE) { $("testBtn").style.display = "none"; $("alarmBtn").style.display = "none"; }
+
+// ---- data ----
+async function get(url, headers) {
+  const r = await fetch(url, {cache: "no-store", headers: headers || {}});
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+// Loads {s, h, n, c} = status, history, notifications, config
+async function load(tab) {
+  if (!REMOTE) {
+    const s = await get("/status");
+    const h = tab === "history" ? await get("/history?limit=40") : null;
+    const n = tab === "alerts" ? await get("/notifications?limit=20") : null;
+    if (!cfg) { try { cfg = await get("/config"); } catch {} }
+    return {s, h, n, c: cfg, published: null};
+  }
+  const [user, repo] = ghRepo();
+  let st;
+  try {
+    st = await get(`https://raw.githubusercontent.com/${user}/${repo}/data/state.json?t=${Date.now()}`);
+  } catch {
+    st = await get(`https://api.github.com/repos/${user}/${repo}/contents/state.json?ref=data`,
+                   {"Accept": "application/vnd.github.raw+json"});
+  }
+  const s = st.status || {};
+  cfg = st.config || cfg;
+  // Recompute the time based fields from the phone's clock, the file may be minutes old
+  const now = Date.now() / 1000;
+  s.age_s = s.last_update_ts ? Math.max(0, Math.round(now - s.last_update_ts)) : null;
+  s.online = s.age_s != null && cfg && s.age_s < cfg.offline_after_s;
+  s.baby_minutes = s.baby && s.baby_since ? Math.round((now - s.baby_since) / 60) : null;
+  (s.alarms || []).forEach(a => { if (a.since_ts) a.minutes = Math.round((now - a.since_ts) / 60); });
+  return {s, h: st.events || [], n: st.notifications || [], c: cfg, published: st.published_at};
+}
+
+async function refresh() {
+  const tab = document.querySelector("nav button.on").dataset.tab;
+  try {
+    const {s, h, n, c, published} = await load(tab);
+    $("err").textContent = "";
+
+    // status
+    const on = $("online");
+    on.textContent = s.online ? "online" : "offline";
+    on.className = "pill" + (s.online ? "" : " off");
+    const b = $("base"); b.textContent = s.base_label || "unknown"; b.className = "base " + (s.base || "unknown");
+    $("age").textContent = "Updated " + ago(s.age_s) + (s.last_update ? " (" + s.last_update.slice(11, 16) + ")" : "");
+
+    // tiles
+    const baby = $("baby");
+    baby.textContent = s.baby ? "In seat" : "Not in seat";
+    baby.className = "v " + (s.baby ? "yes" : "no");
+    $("babySub").textContent = s.baby && s.baby_minutes != null ? `for ${s.baby_minutes} min` : "";
+
+    const t = $("temp");
+    if (s.temp_f == null) { t.textContent = "--"; t.className = "v"; $("tempSub").textContent = "no sensor"; }
+    else {
+      t.textContent = Math.round(s.temp_f) + "°F";
+      t.className = "v" + (c && s.temp_f >= c.hot_alarm_f ? " hot" : c && s.temp_f <= c.cold_alarm_f ? " cold" : "");
+      $("tempSub").textContent = s.temp2_c != null ? "2nd sensor " + Math.round(s.temp2_c * 9 / 5 + 32) + "°F" : "";
+    }
+    $("hum").textContent = s.humidity == null ? "--" : Math.round(s.humidity) + "%";
+    $("humSub").textContent = "";
+
+    // detail rows
+    $("rssi_a").textContent = rssi(s.rssi_a, s.seen_a);
+    $("rssi_b").textContent = rssi(s.rssi_b, s.seen_b);
+    $("fsr").textContent = s.fsr_v == null ? "--" : Number(s.fsr_v).toFixed(2) + " V";
+    $("press").textContent = s.pressure_hpa == null ? "--" : Math.round(s.pressure_hpa) + " hPa";
+    $("last_change").textContent = s.last_change || "none yet";
+    $("uptime").textContent = dur(s.uptime_s);
+
+    // alarm banner
+    const bn = $("banner");
+    if (s.alarms && s.alarms.length) {
+      const a = s.alarms[0];
+      bn.innerHTML = `&#9888; ${a.label.toUpperCase()}<small>${a.message} Active ${a.minutes} min.</small>`;
+      bn.className = "banner show";
+    } else if (!s.online && s.baby) {
+      bn.innerHTML = `&#9888; SEAT UNIT OFFLINE<small>Last report had the baby in the seat, ${ago(s.age_s)}.</small>`;
+      bn.className = "banner show";
+    } else {
+      bn.className = "banner";
+    }
+    $("alarms").innerHTML = s.alarms && s.alarms.length
+      ? s.alarms.map(a => `<li><span class="al">${a.label}</span><time>since ${(a.since || "").slice(11, 16)}</time></li>`).join("")
+      : "<li>None</li>";
+
+    // tab specific
+    if (tab === "history" && h) {
+      $("history").innerHTML = h.length
+        ? h.map(r => `<li><span class="${cls(r.kind, r)}">${r.text}</span><time>${shortTime(r.time)}</time></li>`).join("")
+        : "<li>Nothing yet</li>";
+    }
+    if (tab === "alerts") {
+      if (n) $("notes").innerHTML = n.length
+        ? n.map(r => `<li><span class="${r.kind === "alarm" ? "al" : ""}">${r.message}${r.ok ? "" : " (failed to send)"}</span><time>${shortTime(r.time)}</time></li>`).join("")
+        : "<li>None yet</li>";
+      if (c && c.hot_alarm_f != null) $("rules").innerHTML = `
+        <div class="row"><span>Hot car alarm</span><span>baby in seat and ≥ ${c.hot_alarm_f}°F</span></div>
+        <div class="row"><span>Cold car alarm</span><span>baby in seat and ≤ ${c.cold_alarm_f}°F</span></div>
+        <div class="row"><span>Repeat while active</span><span>every ${c.alarm_repeat_min} min</span></div>
+        <div class="row"><span>Offline after</span><span>${c.offline_after_s / 60} min silent</span></div>
+        <div class="row"><span>Baby in/out notices</span><span>${c.notify_baby_changes ? "on" : "off"}</span></div>
+        ${(c.scheduled_checks || []).map(x => `<div class="row"><span>${x.name}</span><span>${String(x.cron.hour).padStart(2,"0")}:${String(x.cron.minute).padStart(2,"0")} ${x.cron.day_of_week}</span></div>`).join("")}
+        <div class="row"><span>ntfy topic</span><span>${c.ntfy_topic}</span></div>`;
+    }
+
+    // footer
+    if (REMOTE) {
+      const [user, repo] = ghRepo();
+      const pa = published ? ago(Math.round(Date.now() / 1000 - published)) : "unknown";
+      $("source").textContent = `Data from github.com/${user}/${repo}, pushed ${pa}. Refreshes every minute.`;
+    }
+  } catch (e) {
+    $("err").textContent = REMOTE
+      ? "No data yet. Is server.py running with the GitHub token set? (" + (e.message || e) + ")"
+      : "Can't reach the server. Is server.py running?";
+  }
+}
+
+async function post(url, btn, okText) {
+  const orig = btn.textContent; btn.textContent = "Sending...";
+  try { const r = await (await fetch(url, {method: "POST"})).json();
+        btn.textContent = r.ok ? okText : "ntfy failed, see server log"; }
+  catch { btn.textContent = "Server not reachable"; }
+  setTimeout(() => btn.textContent = orig, 4000);
+}
+$("testBtn").onclick = () => post("/test-notify", $("testBtn"), "Sent. Check your phone.");
+$("alarmBtn").onclick = () => post("/test-alarm", $("alarmBtn"), "Alarm sent.");
+
+refresh();
+setInterval(refresh, POLL_MS);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
+</script>
+</body>
+</html>
